@@ -5,6 +5,8 @@ import SiteSetting from '../components/SiteSetting';
 import UserData from '../components/UserData';
 import Password from '../components/Password';
 import Users from '../components/Users';
+import AddNav from "../components/AddNav";
+import AddArticle from "../components/AddArticle";
 
 Vue.use(Router);
 
@@ -35,6 +37,16 @@ export default new Router({
       path:'/users',
       name:'users',
       component:Users
+    },
+    {
+      path:'/addNav',
+      name:'addNav',
+      component:AddNav
+    },
+    {
+      path:'/addArticle',
+      name:'addArticle',
+      component:AddArticle
     }
   ],
   linkActiveClass:'active',

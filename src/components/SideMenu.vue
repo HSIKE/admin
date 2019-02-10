@@ -54,7 +54,7 @@
           </span>我的笔记
         </div>
         <ul class="links">
-          <router-link class="link" to="/articles" tag="li">
+          <router-link class="link" to="/articleList" tag="li">
             笔记管理
           </router-link>
           <router-link class="link" to="/addArticle" tag="li">
