@@ -13,7 +13,7 @@
         <SideMenu/>
       </div>
       <div class="container">
-        <div class="content">
+        <div class="wrapper">
           <router-view></router-view>
         </div>
       </div>

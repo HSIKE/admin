@@ -12,6 +12,7 @@ Vue.use(Router);
 
 export default new Router({
   mode:'history',
+  base:'admin',
   routes: [
     {
       path:'/',
@@ -34,7 +35,7 @@ export default new Router({
       component:Password
     },
     {
-      path:'/users',
+      path:'/userList',
       name:'users',
       component:Users
     },

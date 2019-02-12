@@ -26,7 +26,7 @@
         </ul>
       </li>
       <li class="item">
-        <router-link class="title" to="/users" tag="div">
+        <router-link class="title" to="/userList" tag="div">
           <span class="icon">
             <i class="fa fa-users"></i>
           </span>用户管理
