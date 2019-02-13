@@ -4,7 +4,7 @@
       <i class="fa fa-file-o"></i>
       新增笔记
     </h3>
-    <form>
+    <div class="content">
       <div class="title at-item">
         <span><i style="color: red">*&nbsp;</i>标题：</span>
         <input type="text" placeholder="文章标题" v-model.lazy="title">
@@ -15,7 +15,7 @@
       </div>
       <div class="tags at-item">
         <span><i style="color: red">*&nbsp;</i>标签：</span>
-        <input type="text" placeholder="文章标签，使用“，”隔开" v-model.lazy="tags">
+        <input type="text" placeholder="文章标签，使用“、”隔开" v-model.lazy="tags">
       </div>
       <div class="thumbnail at-item">
         <span>缩略图：</span>
@@ -27,19 +27,19 @@
           <select v-model="pid">
             <option value="def">所属栏目</option>
             <option v-for="nav in navList"
-                :key="`nav${nav.Id}`"
-                :value="nav.value"
-                v-if="nav.value"
-                v-text="nav.navName">
+                    :key="`nav${nav.Id}`"
+                    :value="nav.value"
+                    v-if="nav.value"
+                    v-text="nav.navName">
             </option>
           </select>
         </li>
         <li class="type">
           <select v-model="type">
             <option value="def">类型</option>
-            <option value="recommend">推荐</option>
-            <option value="hot">热门</option>
-            <option value="normal">普通</option>
+            <option value="推荐">推荐</option>
+            <option value="热门">热门</option>
+            <option value="普通">普通</option>
           </select>
         </li>
       </ul>
@@ -52,13 +52,13 @@
         </quill-editor>
       </div>
       <div class="confirm">
-        <button type="reset" @click="submitArticle"><!--@click="submitArticle"-->
-          上传
-        </button><button type="reset" @click="clearEditor">
-          重置
+        <button @click="submitArticle">上传
+        </button><button @click="resetCpt">重置
         </button>
       </div>
-    </form>
+    </div>
+    <!--<Alert :showAlert="showAlert" @hideAlert="hideAlert($event)"
+           :alertMsg="alertMsg"/>-->
   </div>
 </template>
 
@@ -69,9 +69,10 @@
   import 'quill/dist/quill.bubble.css';
   import co from './coConfig';
   import qs from 'qs';
+  import Alert from './Alert';
   export default {
     name: "AddArticle",
-    components:{ quillEditor },
+    components:{Alert, quillEditor },
     data(){
       // 富文本编辑器配置
       const modules={
@@ -91,11 +92,38 @@
         thumbnail:'',
         pid:'def',
         type:'def',
-        navList:[]
+        navList:[],
+        alertMsg:[]
+        /*
+          alertMsg:[],
+          readyToSub:false,
+          showAlert:false,
+          alertReturn:false
+        */
       }
     },
+    /*watch:{
+      alertReturn(v,oldV){
+        if (v && this.readyToSub) {
+          //this.submitArticle();
+          console.log(v);
+        }
+      }
+    },*/
     methods:{
-      clearEditor(){ this.content='' },
+      resetCpt(){
+        this.content=this.title=this.description=this.tags=this.thumbnail='';
+        this.pid=this.type='def';
+      },
+      /*Alert(e){
+        this.showAlert=true;
+        if (e.target.innerText==='上传') this.readyToSub=true;
+      },
+      hideAlert(e){
+        console.log(e);
+        this.showAlert=false;
+        this.alertReturn=e;
+      },*/
       submitArticle(){
         let article=this.valueCheck();
         //console.log(article);
@@ -105,9 +133,12 @@
             method:'post',
             data:qs.stringify(article)
           }).then(resp=>{
-            //console.log(resp);
+            console.log(resp);
             article=null;
-            this.clearEditor();
+            /*this.readyToSub=false;
+            this.article=null;
+            this.alertMsg=[];*/
+            this.resetCpt();
           });
         }
       },
@@ -120,34 +151,25 @@
       },
       valueCheck(){
         let title=this.title.replace(/\s/g,'');
-        let desc=this.description.trim() || '暂无描述...';
+        let description=this.description.trim() || '暂无描述...';
         let tags=this.tags.replace(/\s/g,'');
         let thumbnail='';
         let pid=this.pid;
         let type=this.type;
         let content=this.content;
         let author='HSIKE';
-        if (!title) {
-          alert('文章标题不能为空！');
+        let allertMsg=[];
+        if (!title)  allertMsg.push('文章内容不能为空！')
+        if (!tags) allertMsg.push('文章标签不能为空！')
+        if (!pid || pid==='def') allertMsg.push('选择文章所属栏目！')
+        if (!type || type==='def') allertMsg.push('选择文章类型！')
+        if (!content) allertMsg.push('文章内容不能为空！');
+        if (allertMsg.length){
+          //this.alertMsg=allertMsg;
+          alert(allertMsg.join());
           return null;
         }
-        if (!tags){
-          alert('文章标签不能为空！');
-          return null;
-        }
-        if (!pid || pid==='def'){
-          alert('选择文章所属栏目！');
-          return null;
-        }
-        if (!type || type==='def'){
-          alert('选择文章类型！');
-          return null;
-        }
-        if (!content) {
-          alert('文章内容不能为空！');
-          return null;
-        }
-        return { title, desc, tags, thumbnail, pid, type, content, author }
+        return { title, description, tags, thumbnail, pid, type, content, author }
       }
     },
     created(){ this.getNavList(); }
@@ -163,7 +185,7 @@
     padding:0 10px;
   }
   .com-title i{ margin-right: 10px; }
-  form{ padding:15px 20px; }
+  .content{ padding:15px 20px; }
   .at-item{ margin-bottom: 20px }
   .at-item span{
     display: inline-block;
