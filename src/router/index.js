@@ -7,6 +7,7 @@ import Password from '../components/Password';
 import Users from '../components/Users';
 import AddNav from "../components/AddNav";
 import AddArticle from "../components/AddArticle";
+import ArticleList from "../components/ArticleList";
 
 Vue.use(Router);
 
@@ -48,6 +49,11 @@ export default new Router({
       path:'/addArticle',
       name:'addArticle',
       component:AddArticle
+    },
+    {
+      path:'/articleList',
+      name:'articleList',
+      component:ArticleList
     }
   ],
   linkActiveClass:'active',
