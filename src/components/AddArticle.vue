@@ -134,12 +134,12 @@
             method:'post',
             data:qs.stringify(article)
           }).then(resp=>{
+            resp.data==='添加文章成功！' ? this.resetCpt() : '';
             alert(resp.data);
             article=null;
             /*this.readyToSub=false;
             this.article=null;
             this.alertMsg=[];*/
-            this.resetCpt();
           });
         }
       },
