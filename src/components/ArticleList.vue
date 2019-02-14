@@ -11,23 +11,27 @@
           <li class="a-title item">标题</li>
           <li class="a-tag item">标签</li>
           <li class="a-type item">类型</li>
-          <li class="a-pid item">pid</li>
+          <li class="a-pid item">分类</li>
           <li class="a-desc item">概述</li>
           <li class="a-time item">提交时间</li>
         </ul>
         <ul v-for="item in articleList" :key="`art${item.Id}`" class="detail clear">
           <li class="a-id item">{{ item.Id }}</li>
           <li class="a-title item">
-            <router-link :to="`/updateArticle/${item.Id}`" exact>
+            <router-link :to="`/updateArticle/${item.Id}`" exact :title="item.title">
               {{ item.title }}
             </router-link>
           </li>
-          <li class="a-tag item">{{ item.tags }}</li>
+          <li class="a-tag item" :title="item.tags">{{ item.tags }}</li>
           <li class="a-type item">{{ item.type }}</li>
           <li class="a-pid item">{{ item.pid }}</li>
-          <li class="a-desc item">{{ item.description }}</li>
-          <li class="a-time item">{{ timeFormat(item.time) }}</li>
+          <li class="a-desc item" :title="item.description">{{ item.description }}</li>
+          <li class="a-time item" :title="timeFormat(item.time)">{{ timeFormat(item.time) }}</li>
         </ul>
+        <div class="control">
+          <button>下一页</button>
+          <button>上一页</button>
+        </div>
       </div>
     </div>
   </keep-alive>
@@ -45,22 +49,16 @@
       }
     },
     methods:{
-      getArticleList(){
-        this.$axios.get(`${co}/articles/articleList`)
+      getArticleList(page){
+        this.$axios.get(`${co}/articles/articleList?page=${page || 1}`)
             .then(resp=>{ this.articleList=resp.data })
       }
     },
     created(){
       this.getArticleList();
-      console.log(new Date("2019-02-13T07:37:16.000Z").toLocaleString());
     },
     computed:{
-      timeFormat(){
-        return (time)=> {
-          console.log(time);
-          return new Date(time).toLocaleString()
-        }
-      }
+      timeFormat(){ return (time)=> new Date(time).toLocaleString() }
     }
   }
 </script>
@@ -89,7 +87,7 @@
     height:30px;
     line-height: 30px;
     border-right: 1px solid #e3e3e3;
-    padding:0 10px;
+    padding:0 5px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -98,11 +96,11 @@
     height:40px;
     line-height: 40px;
   }
-  .a-id{ width:6% }
+  .a-id{ width:5% }
   .a-title{ width:30% }
-  .a-tag{ width:14% }
-  .a-type{ width:10% }
-  .a-pid{ width: 10% }
-  .a-desc{ width:15% }
-  .a-time{ width:15% }
+  .a-tag{ width:15% }
+  .a-type{ width:6% }
+  .a-pid{ width:6% }
+  .a-desc{ width:25% }
+  .a-time{ width:13% }
 </style>

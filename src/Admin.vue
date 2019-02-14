@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="admin">
     <div class="header">
       <div class="home">
         <a href="" target="_blank" title="返回首页">
@@ -24,7 +24,7 @@
 <script>
   import SideMenu from "./components/SideMenu";
   export default {
-    name: 'App',
+    name: 'Admin',
     components:{ SideMenu },
   }
 </script>
@@ -32,5 +32,5 @@
 <style>
   @import "assets/css/font-awesome.min.css";
   @import "assets/css/public.css";
-  @import "assets/css/app.css";
+  @import "assets/css/admin.css";
 </style>

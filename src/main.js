@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import App from './App'
+import Admin from './Admin'
 import router from './router'
 import axios from 'axios'
 
@@ -7,8 +7,8 @@ axios.defaults.headers.post['Content-Type']='application/x-www-form-urlencoded';
 Vue.prototype.$axios=axios;
 
 new Vue({
-  el: '#app',
+  el: '#admin',
   router,
-  components: { App },
-  template: '<App/>'
+  components: { Admin },
+  template: '<Admin/>'
 });

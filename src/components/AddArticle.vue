@@ -45,11 +45,11 @@
       </ul>
       <div class="quillEditor">
         <span><i style="color: red">*&nbsp;</i>正文：</span>
-        <quill-editor
+        <quillEditor
             v-model="content"
             ref="editor"
             :options="editorOption">
-        </quill-editor>
+        </quillEditor>
       </div>
       <div class="confirm">
         <button @click="submitArticle">上传
@@ -70,15 +70,17 @@
   import co from './coConfig';
   import qs from 'qs';
   import Alert from './Alert';
+  
   export default {
     name: "AddArticle",
-    components:{Alert, quillEditor },
+    components:{ Alert, quillEditor },
     data(){
       // 富文本编辑器配置
       const modules={
         toolbar:[
           ['bold','italic',{'align':[]},'underline','strike','image'],
           ['blockquote','code-block','link'],
+          [{'list':'ordered'},{'list':'bullet'}],
           [{'header':[1,2,3,4,5,6,false]},{'font':[]},{'size':[]}],
           [{'color':[]},{'background':[]}]
         ]
@@ -93,9 +95,8 @@
         pid:'def',
         type:'def',
         navList:[],
-        alertMsg:[]
+        alertMsg:[],
         /*
-          alertMsg:[],
           readyToSub:false,
           showAlert:false,
           alertReturn:false
@@ -111,7 +112,7 @@
       }
     },*/
     methods:{
-      resetCpt(){
+      resetCpt(){ // 清空表单元素
         this.content=this.title=this.description=this.tags=this.thumbnail='';
         this.pid=this.type='def';
       },
@@ -124,16 +125,16 @@
         this.showAlert=false;
         this.alertReturn=e;
       },*/
-      submitArticle(){
+      submitArticle(){ // 提交文章
         let article=this.valueCheck();
         //console.log(article);
-        if (article){
+        if (article){ // 排空处理
           this.$axios({
             url:`${co}/articles/addArticle`,
             method:'post',
             data:qs.stringify(article)
           }).then(resp=>{
-            console.log(resp);
+            alert(resp.data);
             article=null;
             /*this.readyToSub=false;
             this.article=null;
@@ -142,14 +143,14 @@
           });
         }
       },
-      getNavList(){
+      getNavList(){ // 获取分类信息
         this.$axios.get(`${co}/navs/navList`)
             .then(resp=>{
               //console.log(resp);
               this.navList=resp.data;
             });
       },
-      valueCheck(){
+      valueCheck(){ // 提交文章前数据检查，确保数据合法
         let title=this.title.replace(/\s/g,'');
         let description=this.description.trim() || '暂无描述...';
         let tags=this.tags.replace(/\s/g,'');
@@ -159,14 +160,14 @@
         let content=this.content;
         let author='HSIKE';
         let allertMsg=[];
-        if (!title)  allertMsg.push('文章内容不能为空！')
+        if (!title) allertMsg.push('文章标题不能为空！')
         if (!tags) allertMsg.push('文章标签不能为空！')
-        if (!pid || pid==='def') allertMsg.push('选择文章所属栏目！')
-        if (!type || type==='def') allertMsg.push('选择文章类型！')
+        if (pid==='def') allertMsg.push('选择文章所属栏目！')
+        if (type==='def') allertMsg.push('选择文章类型！')
         if (!content) allertMsg.push('文章内容不能为空！');
         if (allertMsg.length){
           //this.alertMsg=allertMsg;
-          alert(allertMsg.join());
+          alert(allertMsg);
           return null;
         }
         return { title, description, tags, thumbnail, pid, type, content, author }
