@@ -1,6 +1,6 @@
 <template>
   <keep-alive>
-    <div class="ArticleList" v-if="articleList.length">
+    <div class="ArticleList">
       <h3 class="com-title">
         <i class="fa fa-pencil-square-o"></i>
         笔记列表
@@ -24,13 +24,13 @@
           </li>
           <li class="a-tag item" :title="item.tags">{{ item.tags }}</li>
           <li class="a-type item">{{ item.type }}</li>
-          <li class="a-pid item">{{ item.pid }}</li>
+          <li class="a-pid item" :title="item.pid">{{ item.pid }}</li>
           <li class="a-desc item" :title="item.description">{{ item.description }}</li>
           <li class="a-time item" :title="timeFormat(item.time)">{{ timeFormat(item.time) }}</li>
         </ul>
         <div class="control">
-          <button>下一页</button>
-          <button>上一页</button>
+          <button @click="prevPage">上一页</button>
+          <button @click="nextPage">下一页</button>
         </div>
       </div>
     </div>
@@ -45,18 +45,32 @@
     components: {Alert},
     data(){
       return{
-        articleList:[]
+        articleList:[],
+        page:1,
+        lastPage:1
       }
     },
     methods:{
       getArticleList(page){
-        this.$axios.get(`${co}/articles/articleList?page=${page || 1}`)
-            .then(resp=>{ this.articleList=resp.data })
+        console.log('获取列表执行');
+        this.$axios.get(`${co}/articles/allArticles?page=${page}`)
+            .then(resp=>{
+              if((typeof resp.data)==='string'){
+                alert(resp.data);
+                this.page=this.lastPage;
+              }else this.articleList=resp.data;
+            })
+      },
+      nextPage(){ this.page+=1 },
+      prevPage(){ this.page===1 ? alert('已经是第一页了！') :this.page-=1 }
+    },
+    watch:{
+      page(v,oldV){
+        this.getArticleList(v);
+        this.lastPage=oldV;
       }
     },
-    created(){
-      this.getArticleList();
-    },
+    created(){ this.getArticleList(this.page) },
     computed:{
       timeFormat(){ return (time)=> new Date(time).toLocaleString() }
     }

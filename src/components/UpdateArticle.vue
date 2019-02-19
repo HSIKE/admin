@@ -1,21 +1,21 @@
 <template>
-  <div class="addArticle" v-if="navList.length">
+  <div class="addArticle" v-if="article">
     <h3 class="com-title">
       <i class="fa fa-file-o"></i>
-      新增笔记
+      笔记修改
     </h3>
     <div class="content">
       <div class="title at-item">
         <span><i style="color: red">*&nbsp;</i>标题：</span>
-        <input type="text" placeholder="文章标题" v-model.lazy="title">
+        <input type="text" placeholder="文章标题" v-model.lazy="article.title">
       </div>
       <div class="description at-item">
         <span>概述：</span>
-        <textarea v-model.lazy="description"></textarea>
+        <textarea v-model.lazy="article.description"></textarea>
       </div>
       <div class="tags at-item">
         <span><i style="color: red">*&nbsp;</i>标签：</span>
-        <input type="text" placeholder="文章标签，使用“、”隔开" v-model.lazy="tags">
+        <input type="text" placeholder="文章标签，使用“、”隔开" v-model.lazy="article.tags">
       </div>
       <div class="thumbnail at-item">
         <span>缩略图：</span>
@@ -24,18 +24,18 @@
       <ul class="others at-item">
         <li class="others-title"><i style="color: red">*&nbsp;</i>其他：</li>
         <li class="pid">
-          <select v-model="pid">
+          <select v-model="article.pid">
             <option value="def">所属栏目</option>
             <option v-for="nav in navList"
-                    :key="`nav${nav.Id}`"
-                    :value="nav.value"
-                    v-if="nav.value"
-                    v-text="nav.navName">
+                :key="`nav${nav.Id}`"
+                :value="nav.value"
+                v-if="nav.value"
+                v-text="nav.navName">
             </option>
           </select>
         </li>
         <li class="type">
-          <select v-model="type">
+          <select v-model="article.type">
             <option value="def">类型</option>
             <option value="推荐">推荐</option>
             <option value="热门">热门</option>
@@ -46,15 +46,14 @@
       <div class="quillEditor">
         <span><i style="color: red">*&nbsp;</i>正文：</span>
         <quillEditor
-            v-model="content"
+            v-model="article.content"
             ref="editor"
             :options="editorOption">
         </quillEditor>
       </div>
       <div class="confirm">
         <button @click="submitArticle">上传
-        </button><button @click="resetCpt">重置
-        </button>
+      </button>
       </div>
     </div>
     <!--<Alert :showAlert="showAlert" @hideAlert="hideAlert($event)"
@@ -65,15 +64,13 @@
 <script>
   import { quillEditor } from 'vue-quill-editor';
   import 'quill/dist/quill.core.css';
-  //import 'quill/dist/quill.bubble.css';
   import 'quill/dist/quill.snow.css';
   import co from './coConfig';
   import qs from 'qs';
-  import Alert from './Alert';
   
   export default {
-    name: "AddArticle",
-    components:{ Alert, quillEditor },
+    name: "UpdataArticle",
+    components:{ quillEditor },
     data(){
       // 富文本编辑器配置
       const modules={
@@ -87,84 +84,61 @@
       };
       return{
         editorOption:{ modules },
-        content:'',
-        title:'',
-        description:'',
-        tags:'',
-        thumbnail:'',
-        pid:'def',
-        type:'def',
-        navList:[],
-        alertMsg:[],
-        /*
-          readyToSub:false,
-          showAlert:false,
-          alertReturn:false
-        */
+        article:null,
+        navList:[]
       }
     },
-    /*watch:{
-      alertReturn(v,oldV){
-        if (v && this.readyToSub) {
-          //this.submitArticle();
-          console.log(v);
-        }
-      }
-    },*/
     methods:{
-      resetCpt(){ // 清空表单元素
-        this.content=this.title=this.description=this.tags=this.thumbnail='';
-        this.pid=this.type='def';
-      },
       submitArticle(){ // 提交文章
         let article=this.valueCheck();
-        //console.log(article);
         if (article){ // 排空处理
           this.$axios({
-            url:`${co}/articles/addArticle`,
+            url:`${co}/articles/updateArticle`,
             method:'post',
-            data:qs.stringify(article)
+            data:qs.stringify(article),
           }).then(resp=>{
-            resp.data==='添加文章成功！' ? this.resetCpt() : '';
+            console.log(resp.data);
             alert(resp.data);
             article=null;
-            /*this.readyToSub=false;
-            this.article=null;
-            this.alertMsg=[];*/
           });
         }
       },
       getNavList(){ // 获取分类信息
         this.$axios.get(`${co}/navs/navList`)
-            .then(resp=>{
-              //console.log(resp);
-              this.navList=resp.data;
-            });
+            .then(resp=>{ this.navList=resp.data });
       },
       valueCheck(){ // 提交文章前数据检查，确保数据合法
-        let title=this.title.replace(/\s/g,'');
-        let description=this.description.trim() || '暂无描述...';
-        let tags=this.tags.replace(/\s/g,'');
-        let thumbnail='';
-        let pid=this.pid;
-        let type=this.type;
-        let content=this.content;
-        let author='HSIKE';
-        let allertMsg=[];
-        if (!title) allertMsg.push('文章标题不能为空！')
-        if (!tags) allertMsg.push('文章标签不能为空！')
-        if (pid==='def') allertMsg.push('选择文章所属栏目！')
-        if (type==='def') allertMsg.push('选择文章类型！')
-        if (!content) allertMsg.push('文章内容不能为空！');
-        if (allertMsg.length){
-          //this.alertMsg=allertMsg;
-          alert(allertMsg);
+        let title=this.article.title.replace(/\s/g,'');
+        let description=this.article.description;
+        let tags=this.article.tags.replace(/\s/g,'');
+        let pid=this.article.pid;
+        let type=this.article.type;
+        let content=this.article.content;
+        let alertMsg=[];
+        if (!title) alertMsg.push('文章标题不能为空！')
+        if(!description) alertMsg.push('文章描述不能为空！')
+        if (!tags) alertMsg.push('文章标签不能为空！')
+        if (pid==='def') alertMsg.push('选择文章所属栏目！')
+        if (type==='def') alertMsg.push('选择文章类型！')
+        if (!content) alertMsg.push('文章内容不能为空！');
+        if (alertMsg.length){
+          alert(alertMsg);
           return null;
         }
-        return { title, description, tags, thumbnail, pid, type, content, author }
+        return this.article;
+      },
+      getArticle(){
+        this.$axios.get(`${co}/articles/getArticle?Id=${this.$route.params.Id}`)
+            .then(resp=>{
+              let art=resp.data;
+              (typeof  art)==='object' ? this.article=art : alert(art);
+            })
       }
     },
-    created(){ this.getNavList(); }
+    created(){
+      this.getNavList();
+      this.getArticle();
+    }
   }
 </script>
 
