@@ -63,5 +63,5 @@ export default new Router({
     }
   ],
   linkActiveClass:'active',
-  linkExactActiveClass:'ex-active'
+  linkExactActiveClass:'ex-active',
 })
