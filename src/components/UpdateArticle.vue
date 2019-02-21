@@ -131,7 +131,7 @@
         this.$axios.get(`${co}/articles/getArticle?Id=${this.$route.params.Id}`)
             .then(resp=>{
               let art=resp.data;
-              (typeof  art)==='object' ? this.article=art : alert(art);
+              Array.isArray(art) ? this.article=art[0] : alert(art);
             })
       }
     },
