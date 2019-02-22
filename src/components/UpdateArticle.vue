@@ -69,7 +69,7 @@
   import qs from 'qs';
   
   export default {
-    name: "UpdataArticle",
+    name: "UpdateArticle",
     components:{ quillEditor },
     data(){
       // 富文本编辑器配置
@@ -89,6 +89,7 @@
       }
     },
     methods:{
+      showAlert(msg){ this.$root.$data.store.show.call(this.$root.$data.store,msg) },
       submitArticle(){ // 提交文章
         let article=this.valueCheck();
         if (article){ // 排空处理
@@ -97,15 +98,19 @@
             method:'post',
             data:qs.stringify(article),
           }).then(resp=>{
-            console.log(resp.data);
-            alert(resp.data);
+            let data=resp.data;
+            this.showAlert((typeof data)==='string' ? data : '服务器错误');
             article=null;
-          });
+          }).catch(err=>this.showAlert(err));
         }
       },
       getNavList(){ // 获取分类信息
         this.$axios.get(`${co}/navs/navList`)
-            .then(resp=>{ this.navList=resp.data });
+            .then(resp=>{
+              let data=resp.data;
+              if(Array.isArray(data)) this.navList=data;
+              else this.showAlert('获取分类导航失败')
+            }).catch(err=>this.showAlert(err));
       },
       valueCheck(){ // 提交文章前数据检查，确保数据合法
         let title=this.article.title.replace(/\s/g,'');
@@ -122,7 +127,7 @@
         if (type==='def') alertMsg.push('选择文章类型！')
         if (!content) alertMsg.push('文章内容不能为空！');
         if (alertMsg.length){
-          alert(alertMsg);
+          this.showAlert(alertMsg);
           return null;
         }
         return this.article;
@@ -131,8 +136,10 @@
         this.$axios.get(`${co}/articles/getArticle?Id=${this.$route.params.Id}`)
             .then(resp=>{
               let art=resp.data;
-              (typeof  art)==='object' ? this.article=art : alert(art);
-            })
+              if(Array.isArray(art))
+                art.length ? this.article=art[0] : this.showAlert('未查找到相关文章');
+              else this.showAlert('服务器错误！');
+            }).catch(err=>this.showAlert(err));
       }
     },
     created(){

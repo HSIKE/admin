@@ -1,14 +1,14 @@
 <template>
-  <transition name="fade">
-    <div class="alert" v-show="showAlert">
-      <div class="box">
-        <h4 class="title">提示</h4>
-        <div class="con">
-          提示内容
+  <transition name="fade" appear>
+    <div class="alert" v-if="isShow">
+      <div class="alert-con">
+        <div class="msgs">
+          <p v-for="(msg,index) in alertMsg" :key="`msg${index}`"
+              v-html="`${msg}`"></p>
         </div>
-        <div class="result">
-          <button class="yes" @click="chooseYes">确定</button>
-          <button class="no" @click="chooseNo">取消</button>
+        <div class="close clear">
+          <button class="disable" @click="off" v-if="turnOff">永久关闭</button>
+          <button class="ok" @click="iKnow">我知道了</button>
         </div>
       </div>
     </div>
@@ -17,77 +17,82 @@
 
 <script>
   export default {
-    name: 'Alert',
-    props:['showAlert'],
-    data(){
-      return{
-      }
+    name:"Alert",
+    computed:{
+      isShow(){ return this.$root.store.state.isShow },
+      alertMsg(){ return this.$root.store.state.alertMsg },
+      turnOff(){ return this.$root.store.state.count >= 3 }
     },
     methods:{
-      chooseNo(){ this.$emit('hideAlert',false) },
-      chooseYes(){ this.$emit('hideAlert',true) }
+      iKnow(){
+        this.$root.store.hide.call(this.$root.store);
+        setTimeout(()=>{
+          this.$root.store.reset.call(this.$root.store)
+        },500)
+      },
+      off(){ this.$root.store.off.call(this.$root.store) }
     }
   }
 </script>
 
 <style scoped>
   .alert{
+    z-index: 3000;
     position: fixed;
-    z-index: 2000;
     top:0;bottom:0;
     left:0;right:0;
-    background: rgba(0, 0, 0, 0.19);
-    opacity: 1;
-    user-select: none;
+    background: rgba(0, 0, 0, 0.09);
+    cursor: default;
+    color:#009999;
   }
-  .box{
-    background:white;
-    border-radius: 5px;
-    position:absolute;
-    width:400px;
-    border:1px solid deepskyblue;
+  .alert-con{
+    position: absolute;
+    width:360px;
+    opacity: 1;
+    background: white;
     top:50%;left:50%;
+    /*border:1px solid #0080ad;*/
+    -webkit-box-shadow: 0 0 5px 1px rgba(0, 133, 255, 0.18);
+    -moz-box-shadow: 0 0 5px 1px rgba(0, 133, 255, 0.18);
+    box-shadow: 0 0 5px 1px rgba(0, 133, 255, 0.18);
     -webkit-transform: translate(-50%,-50%);
     -moz-transform: translate(-50%,-50%);
     -ms-transform: translate(-50%,-50%);
     -o-transform: translate(-50%,-50%);
     transform: translate(-50%,-50%);
   }
-  .title{
-    padding:0 20px;
-    height:50px;
-    line-height: 50px;
-    color:deepskyblue;
-    border-bottom: 1px solid deepskyblue;
+  
+  .msgs{
+    font-size: 15px;
+    line-height: 1;
+    padding:10px 15px 0;
   }
-  .con{
-    border-bottom: 1px solid deepskyblue;
-    padding:15px 20px;
+  .msgs p{ padding:5px 0 }
+  .close{
+    height:30px;
+    padding:3px 15px;
   }
-  .result{
-    text-align: right;
-    padding:0 20px;
-    height:40px;
-    line-height: 40px;
-  }
-  button{
-    height:24px;
-    padding:0 10px;
+  .close button{
     font-size: 14px;
-    background: deepskyblue;
-    color:white;
-    border-radius: 3px;
+    height:24px;
+    padding:0 5px;
     cursor: pointer;
-    margin-left: 10px;
+    color:#009999;
   }
-  .fade-enter,
-  .fade-leave-to{ opacity:0 }
-  .fade-enter-active,
-  .fade-leave-active{
-    -webkit-transition: opacity .3s;
-    -moz-transition: opacity .3s;
-    -ms-transition: opacity .3s;
-    -o-transition: opacity .3s;
-    transition: opacity .3s;
+  .close .disable{
+    float: left;
+    color:darkorange;
+  }
+  .close .disable:hover{ color:red }
+  .close .ok{ float:right }
+  .fade-enter,.fade-leave-to{
+    opacity: 0;
+  }
+  .fade-enter-active,.fade-leave-active{
+    -webkit-transition: opacity 0.5s;
+    -moz-transition: opacity 0.5s;
+    -ms-transition: opacity 0.5s;
+    -o-transition: opacity 0.5s;
+    transition: opacity 0.5s;
   }
 </style>

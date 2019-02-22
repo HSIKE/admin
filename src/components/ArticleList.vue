@@ -1,6 +1,6 @@
 <template>
   <keep-alive>
-    <div class="ArticleList">
+    <div class="ArticleList" v-if="articleList.length">
       <h3 class="com-title">
         <i class="fa fa-pencil-square-o"></i>
         笔记列表
@@ -30,6 +30,7 @@
         </ul>
         <div class="control">
           <button @click="prevPage">上一页</button>
+          <span v-html="page"></span>
           <button @click="nextPage">下一页</button>
         </div>
       </div>
@@ -42,35 +43,40 @@
   import Alert from './Alert';
   export default {
     name:"ArticleList",
-    components: {Alert},
     data(){
       return{
         articleList:[],
         page:1,
-        lastPage:1
       }
     },
     methods:{
-      getArticleList(page){
-        console.log('获取列表执行');
-        this.$axios.get(`${co}/articles/allArticles?page=${page}`)
+      getArticleList(){
+        this.$axios.get(`${co}/articles/allArticles?page=${this.page}`)
             .then(resp=>{
-              if((typeof resp.data)==='string'){
-                alert(resp.data);
-                this.page=this.lastPage;
-              }else this.articleList=resp.data;
-            })
+              let data=resp.data;
+              if(Array.isArray(data)){
+                if(data.length) this.articleList=resp.data;
+                else this.showAlert('没有了');
+              }else this.showAlert('服务器错误！');
+            }).catch(err => this.showAlert(err));
       },
-      nextPage(){ this.page+=1 },
-      prevPage(){ this.page===1 ? alert('已经是第一页了！') :this.page-=1 }
-    },
-    watch:{
-      page(v,oldV){
-        this.getArticleList(v);
-        this.lastPage=oldV;
+      showAlert(msg){ this.$root.store.show.call(this.$root.store,msg) },
+      nextPage(){
+        if(this.articleList.length<20) this.showAlert('没有了');
+        else{
+          this.page++;
+          this.getArticleList()
+        }
+      },
+      prevPage(){
+        if(this.page===1) this.showAlert('已经是第一页了！');
+        else{
+          this.page--;
+          this.getArticleList();
+        }
       }
     },
-    created(){ this.getArticleList(this.page) },
+    created(){ this.getArticleList() },
     computed:{
       timeFormat(){ return (time)=> new Date(time).toLocaleString() }
     }
@@ -87,7 +93,7 @@
   }
   .com-title i{ margin-right: 10px; }
   .list{
-    padding:15px 20px;
+    padding:15px 20px 5px;
     width:100%;
     text-align: center;
   }
@@ -117,4 +123,13 @@
   .a-pid{ width:6% }
   .a-desc{ width:25% }
   .a-time{ width:13% }
+  .control{
+    margin-top: 5px;
+    padding:5px 0;
+    font-size: 14px;
+  }
+  .control span{
+    display: inline-block;
+    margin:0 5px;
+  }
 </style>

@@ -18,14 +18,16 @@
         </div>
       </div>
     </div>
+    <Alert/>
   </div>
 </template>
 
 <script>
   import SideMenu from "./components/SideMenu";
+  import Alert from "./components/Alert";
   export default {
     name: 'Admin',
-    components:{ SideMenu },
+    components:{ Alert, SideMenu },
   }
 </script>
 
