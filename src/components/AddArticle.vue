@@ -76,16 +76,16 @@
     components:{ Alert, quillEditor },
     data(){
       // 富文本编辑器配置
-      const modules={
+      const modules = {
         toolbar:[
-          ['bold','italic',{'align':[]},'underline','strike','image'],
+          ['bold','italic',{ 'align':[] },'underline','strike','image'],
           ['blockquote','code-block','link'],
-          [{'list':'ordered'},{'list':'bullet'}],
-          [{'header':[1,2,3,4,5,6,false]},{'font':[]},{'size':[]}],
-          [{'color':[]},{'background':[]}]
+          [{ 'list':'ordered' },{ 'list':'bullet' }],
+          [{ 'header':[1,2,3,4,5,6,false] },{ 'font':[] },{ 'size':[] }],
+          [{ 'color':[] },{ 'background':[] }]
         ]
       };
-      return{
+      return {
         editorOption:{ modules },
         content:'',
         title:'',
@@ -96,26 +96,14 @@
         type:'def',
         navList:[],
         alertMsg:[],
-        /*
-          readyToSub:false,
-          showAlert:false,
-          alertReturn:false
-        */
       }
     },
-    /*watch:{
-      alertReturn(v,oldV){
-        if (v && this.readyToSub) {
-          //this.submitArticle();
-          console.log(v);
-        }
-      }
-    },*/
     methods:{
       resetCpt(){ // 清空表单元素
         this.content=this.title=this.description=this.tags=this.thumbnail='';
         this.pid=this.type='def';
       },
+      showAlert(msg){ this.$root.$data.store.show.call(this.$root.$data.store,msg) },
       submitArticle(){ // 提交文章
         let article=this.valueCheck();
         //console.log(article);
@@ -124,22 +112,27 @@
             url:`${co}/articles/addArticle`,
             method:'post',
             data:qs.stringify(article)
-          }).then(resp=>{
-            resp.data==='添加成功' ? this.resetCpt() : '';
-            alert(resp.data);
+          }).then((resp,err)=>{
+            if(err){
+              this.showAlert(err);
+              return;
+            }
+            let data=resp.data;
+            if((typeof data)==='string'){
+              if(data==='添加成功') this.resetCpt();
+              this.showAlert(data);
+            }else this.showAlert('服务器错误');
             article=null;
-            /*this.readyToSub=false;
-            this.article=null;
-            this.alertMsg=[];*/
-          });
+          }).catch(err => this.showAlert(err));
         }
       },
       getNavList(){ // 获取分类信息
         this.$axios.get(`${co}/navs/navList`)
             .then(resp=>{
-              //console.log(resp);
-              this.navList=resp.data;
-            });
+              let data=resp.data;
+              if(Array.isArray(data)) this.navList=data;
+              else this.showAlert('服务器错误')
+            }).catch(err => this.showAlert(err));
       },
       valueCheck(){ // 提交文章前数据检查，确保数据合法
         let title=this.title.replace(/\s/g,'');
@@ -157,8 +150,7 @@
         if (type==='def') allertMsg.push('选择文章类型！')
         if (!content) allertMsg.push('文章内容不能为空！');
         if (allertMsg.length){
-          //this.alertMsg=allertMsg;
-          alert(allertMsg);
+          this.showAlert(allertMsg);
           return null;
         }
         return { title, description, tags, thumbnail, pid, type, content, author }
