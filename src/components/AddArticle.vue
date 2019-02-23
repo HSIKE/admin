@@ -57,15 +57,12 @@
         </button>
       </div>
     </div>
-    <!--<Alert :showAlert="showAlert" @hideAlert="hideAlert($event)"
-           :alertMsg="alertMsg"/>-->
   </div>
 </template>
 
 <script>
   import { quillEditor } from 'vue-quill-editor';
   import 'quill/dist/quill.core.css';
-  //import 'quill/dist/quill.bubble.css';
   import 'quill/dist/quill.snow.css';
   import co from './coConfig';
   import qs from 'qs';
@@ -106,7 +103,6 @@
       showAlert(msg){ this.$root.$data.store.show.call(this.$root.$data.store,msg) },
       submitArticle(){ // 提交文章
         let article=this.valueCheck();
-        //console.log(article);
         if (article){ // 排空处理
           this.$axios({
             url:`${co}/articles/addArticle`,

@@ -56,8 +56,6 @@
       </button>
       </div>
     </div>
-    <!--<Alert :showAlert="showAlert" @hideAlert="hideAlert($event)"
-           :alertMsg="alertMsg"/>-->
   </div>
 </template>
 
@@ -110,7 +108,7 @@
               let data=resp.data;
               if(Array.isArray(data)) this.navList=data;
               else this.showAlert('获取分类导航失败')
-            }).catch(err=>this.showAlert(err));
+            }).catch(err => this.showAlert(err));
       },
       valueCheck(){ // 提交文章前数据检查，确保数据合法
         let title=this.article.title.replace(/\s/g,'');
@@ -120,11 +118,11 @@
         let type=this.article.type;
         let content=this.article.content;
         let alertMsg=[];
-        if (!title) alertMsg.push('文章标题不能为空！')
-        if(!description) alertMsg.push('文章描述不能为空！')
-        if (!tags) alertMsg.push('文章标签不能为空！')
-        if (pid==='def') alertMsg.push('选择文章所属栏目！')
-        if (type==='def') alertMsg.push('选择文章类型！')
+        if (!title) alertMsg.push('文章标题不能为空！');
+        if(!description) alertMsg.push('文章描述不能为空！');
+        if (!tags) alertMsg.push('文章标签不能为空！');
+        if (pid==='def') alertMsg.push('选择文章所属栏目！');
+        if (type==='def') alertMsg.push('选择文章类型！');
         if (!content) alertMsg.push('文章内容不能为空！');
         if (alertMsg.length){
           this.showAlert(alertMsg);
@@ -136,15 +134,10 @@
         this.$axios.get(`${co}/articles/getArticle?Id=${this.$route.params.Id}`)
             .then(resp=>{
               let art=resp.data;
-<<<<<<< HEAD
-              Array.isArray(art) ? this.article=art[0] : alert(art);
-            })
-=======
               if(Array.isArray(art))
                 art.length ? this.article=art[0] : this.showAlert('未查找到相关文章');
               else this.showAlert('服务器错误！');
-            }).catch(err=>this.showAlert(err));
->>>>>>> 72d334fd90977be31e1472045186f0cf96bd0f9a
+            }).catch(err => this.showAlert(err));
       }
     },
     created(){
