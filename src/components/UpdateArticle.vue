@@ -136,10 +136,15 @@
         this.$axios.get(`${co}/articles/getArticle?Id=${this.$route.params.Id}`)
             .then(resp=>{
               let art=resp.data;
+<<<<<<< HEAD
+              Array.isArray(art) ? this.article=art[0] : alert(art);
+            })
+=======
               if(Array.isArray(art))
                 art.length ? this.article=art[0] : this.showAlert('未查找到相关文章');
               else this.showAlert('服务器错误！');
             }).catch(err=>this.showAlert(err));
+>>>>>>> 72d334fd90977be31e1472045186f0cf96bd0f9a
       }
     },
     created(){
