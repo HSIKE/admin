@@ -22,7 +22,7 @@ const store={
         ? this.state.alertMsg.concat(msg)
         : this.state.alertMsg.push(msg);
       if(this.state.count >= 3)
-        this.state.alertMsg.push('','<span style="color:darkorange">↓↓↓ 觉得这个提示很烦？点击永久关闭可以禁用</span>')
+        this.state.alertMsg.push('','<span style="color:darkorange">↓↓↓ 弹窗很烦？点击永久关闭可以禁用</span>')
     }
   },
   hide(){ this.state.isShow=false }, // 隐藏
@@ -35,10 +35,14 @@ const store={
   }
 };
 
+const cors='/api'
 new Vue({
   el: '#admin',
   router,
-  data:{ store },
+  data:{
+    store,
+    cors
+  },
   components: { Admin },
   template: '<Admin/>'
 });

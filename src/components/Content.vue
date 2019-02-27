@@ -1,6 +1,6 @@
 <template>
   <div class="content">
-    内容层
+    数据库内数据概况，待完善
   </div>
 </template>
 

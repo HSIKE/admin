@@ -39,8 +39,6 @@
 </template>
 
 <script>
-  import co from './coConfig'
-  import Alert from './Alert';
   export default {
     name:"ArticleList",
     data(){
@@ -51,7 +49,7 @@
     },
     methods:{
       getArticleList(){
-        this.$axios.get(`${co}/articles/allArticles?page=${this.page}`)
+        this.$axios.get(`${this.$root.cors}/articles/allArticles?page=${this.page}`)
             .then(resp=>{
               let data=resp.data;
               if(Array.isArray(data)){

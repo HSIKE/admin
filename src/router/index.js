@@ -9,6 +9,7 @@ import AddNav from "../components/AddNav";
 import AddArticle from "../components/AddArticle";
 import ArticleList from "../components/ArticleList";
 import UpdateArticle from "../components/UpdateArticle";
+import ErrorPage from '../components/ErrorPage';
 
 Vue.use(Router);
 
@@ -60,6 +61,11 @@ export default new Router({
       path:'/updateArticle/:Id',
       name:'updateArticle',
       component:UpdateArticle
+    },
+    {
+      path:'*',
+      name:'error',
+      component:ErrorPage
     }
   ],
   linkActiveClass:'active',

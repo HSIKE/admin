@@ -18,8 +18,27 @@
         <input type="text" placeholder="文章标签，使用“、”隔开" v-model.lazy="article.tags">
       </div>
       <div class="thumbnail at-item">
-        <span>缩略图：</span>
-        <input type="file" accept="image/*">
+        <span><i style="color: red">*&nbsp;</i>封面：</span>
+        <select v-model="cover">
+          <option value="def">选择封面</option>
+          <option value="css">css</option>
+          <option value="css_1">css_1</option>
+          <option value="css3">css3</option>
+          <option value="css3_1">css3_1</option>
+          <option value="js">js</option>
+          <option value="es6">es6</option>
+          <option value="es5-es6">es5-es6</option>
+          <option value="html">html</option>
+          <option value="html5">html5</option>
+          <option value="jQuery">jQuery</option>
+          <option value="vue">Vue</option>
+          <option value="react">React</option>
+          <option value="angular">Angular</option>
+          <option value="node">node</option>
+          <option value="npm">npm</option>
+          <option value="mysql">mysql</option>
+        </select>
+        <img :src="getCover">
       </div>
       <ul class="others at-item">
         <li class="others-title"><i style="color: red">*&nbsp;</i>其他：</li>
@@ -38,7 +57,6 @@
           <select v-model="article.type">
             <option value="def">类型</option>
             <option value="推荐">推荐</option>
-            <option value="热门">热门</option>
             <option value="普通">普通</option>
           </select>
         </li>
@@ -53,7 +71,7 @@
       </div>
       <div class="confirm">
         <button @click="submitArticle">上传
-      </button>
+        </button><button @click="delArticle(article.Id)">删除</button>
       </div>
     </div>
   </div>
@@ -63,7 +81,6 @@
   import { quillEditor } from 'vue-quill-editor';
   import 'quill/dist/quill.core.css';
   import 'quill/dist/quill.snow.css';
-  import co from './coConfig';
   import qs from 'qs';
   
   export default {
@@ -83,37 +100,54 @@
       return{
         editorOption:{ modules },
         article:null,
-        navList:[]
+        navList:[],
+        cover:'def'
       }
     },
+    computed:{
+      getCover(){ return `http://47.100.12.224/img/covers/${this.cover}.jpg` }
+    },
     methods:{
-      showAlert(msg){ this.$root.$data.store.show.call(this.$root.$data.store,msg) },
+      showAlert(msg){ this.$root.store.show.call(this.$root.store,msg) },
       submitArticle(){ // 提交文章
         let article=this.valueCheck();
         if (article){ // 排空处理
           this.$axios({
-            url:`${co}/articles/updateArticle`,
+            url:`${this.$root.cors}/articles/updateArticle`,
             method:'post',
-            data:qs.stringify(article),
+            data:qs.stringify(Object.assign(article,{cover:this.getCover})),
           }).then(resp=>{
             let data=resp.data;
-            this.showAlert((typeof data)==='string' ? data : '服务器错误');
+            this.showAlert((typeof data)==='string' ? data : '数据库访问出错，检查后台接口配置');
             article=null;
-          }).catch(err=>this.showAlert(err));
+          }).catch(err=>this.showAlert('可能是服务器定期重启，稍后再试'));
         }
       },
       getNavList(){ // 获取分类信息
-        this.$axios.get(`${co}/navs/navList`)
+        this.$axios.get(`${this.$root.cors}/navs/navList`)
             .then(resp=>{
               let data=resp.data;
               if(Array.isArray(data)) this.navList=data;
-              else this.showAlert('获取分类导航失败')
-            }).catch(err => this.showAlert(err));
+              else this.showAlert('天啦，出bug啦，赶紧点那边的联系方式让人来修吧~')
+            }).catch(err => this.showAlert('可能是服务器正在定期重启，等下刷新试试？'));
+      },
+      delArticle(Id){
+        this.$axios({
+          url:`${this.$root.cors}/articles/delArticle`,
+          method: 'post',
+          data: qs.stringify({ Id })
+        }).then(resp=>{
+          if((typeof resp.data)==='string'){
+            this.showAlert(resp.data);
+            this.$router.push('/articleList')
+          }else this.showAlert('数据库访问出错，检查后台接口配置');
+        }).catch(err=> this.showAlert('可能是服务器定期重启，稍后再试'))
       },
       valueCheck(){ // 提交文章前数据检查，确保数据合法
         let title=this.article.title.replace(/\s/g,'');
         let description=this.article.description;
         let tags=this.article.tags.replace(/\s/g,'');
+        let cover=this.article.cover;
         let pid=this.article.pid;
         let type=this.article.type;
         let content=this.article.content;
@@ -121,6 +155,7 @@
         if (!title) alertMsg.push('文章标题不能为空！');
         if(!description) alertMsg.push('文章描述不能为空！');
         if (!tags) alertMsg.push('文章标签不能为空！');
+        if(cover==='def') alertMsg.push('封面不能为空');
         if (pid==='def') alertMsg.push('选择文章所属栏目！');
         if (type==='def') alertMsg.push('选择文章类型！');
         if (!content) alertMsg.push('文章内容不能为空！');
@@ -131,13 +166,22 @@
         return this.article;
       },
       getArticle(){
-        this.$axios.get(`${co}/articles/getArticle?Id=${this.$route.params.Id}`)
+        console.log(this.$root.cors);
+        this.$axios.get(`${this.$root.cors}/articles/getArticle?Id=${this.$route.params.Id}`)
             .then(resp=>{
               let art=resp.data;
-              if(Array.isArray(art))
-                art.length ? this.article=art[0] : this.showAlert('未查找到相关文章');
-              else this.showAlert('服务器错误！');
-            }).catch(err => this.showAlert(err));
+              if(Array.isArray(art)){
+                if(art.length){
+                  this.article=art[0];
+                  this.cover=
+                      art[0].cover
+                      ? art[0].cover.replace('http://47.100.12.224/img/covers/','').replace('.jpg','')
+                      : 'def'
+                }
+              }
+                // art.length ? this.article=art[0] : this.showAlert('未查找到相关文章');
+              else this.showAlert('数据库访问出错，检查后台接口配置');
+            }).catch(err => this.showAlert('可能是服务器定期重启，稍后再试'));
       }
     },
     created(){
@@ -190,6 +234,24 @@
     color:#666;
   }
   .at-item textarea:focus{ border-color: deepskyblue; }
+  .thumbnail{
+    position: relative;
+  }
+  .thumbnail select{
+    width:40%;
+    text-align: center;
+    text-align-last: center;
+    height:30px;
+    margin:5px 10px;
+    border:1px solid #e3e3e3;
+  }
+  .thumbnail img{
+    position: absolute;
+    right: 5%;
+    width:20%;
+    max-width: 200px;
+    z-index: 1000;
+  }
   .others li{
     display: inline-block;
     vertical-align: top;

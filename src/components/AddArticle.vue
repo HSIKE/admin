@@ -10,7 +10,7 @@
         <input type="text" placeholder="文章标题" v-model.lazy="title">
       </div>
       <div class="description at-item">
-        <span>概述：</span>
+        <span><i style="color: red">*&nbsp;</i>概述：</span>
         <textarea v-model.lazy="description"></textarea>
       </div>
       <div class="tags at-item">
@@ -18,8 +18,27 @@
         <input type="text" placeholder="文章标签，使用“、”隔开" v-model.lazy="tags">
       </div>
       <div class="thumbnail at-item">
-        <span>缩略图：</span>
-        <input type="file" accept="image/*">
+        <span><i style="color: red">*&nbsp;</i>封面：</span>
+        <select v-model="cover">
+          <option value="def">选择封面</option>
+          <option value="css">css</option>
+          <option value="css_1">css_1</option>
+          <option value="css3">css3</option>
+          <option value="css3_1">css3_1</option>
+          <option value="js">js</option>
+          <option value="es6">es6</option>
+          <option value="es5-es6">es5-es6</option>
+          <option value="html">html</option>
+          <option value="html5">html5</option>
+          <option value="jQuery">jQuery</option>
+          <option value="vue">Vue</option>
+          <option value="react">React</option>
+          <option value="angular">Angular</option>
+          <option value="node">node</option>
+          <option value="npm">npm</option>
+          <option value="mysql">mysql</option>
+        </select>
+        <img :src="getCover">
       </div>
       <ul class="others at-item">
         <li class="others-title"><i style="color: red">*&nbsp;</i>其他：</li>
@@ -38,7 +57,6 @@
           <select v-model="type">
             <option value="def">类型</option>
             <option value="推荐">推荐</option>
-            <option value="热门">热门</option>
             <option value="普通">普通</option>
           </select>
         </li>
@@ -64,13 +82,11 @@
   import { quillEditor } from 'vue-quill-editor';
   import 'quill/dist/quill.core.css';
   import 'quill/dist/quill.snow.css';
-  import co from './coConfig';
   import qs from 'qs';
-  import Alert from './Alert';
   
   export default {
     name: "AddArticle",
-    components:{ Alert, quillEditor },
+    components:{ quillEditor },
     data(){
       // 富文本编辑器配置
       const modules = {
@@ -88,53 +104,52 @@
         title:'',
         description:'',
         tags:'',
-        thumbnail:'',
+        cover:'def',
         pid:'def',
         type:'def',
         navList:[],
         alertMsg:[],
       }
     },
+    computed:{
+      getCover(){ return `http://47.100.12.224/img/covers/${this.cover}.jpg` }
+    },
     methods:{
       resetCpt(){ // 清空表单元素
-        this.content=this.title=this.description=this.tags=this.thumbnail='';
+        this.content=this.title=this.description=this.tags=this.cover='';
         this.pid=this.type='def';
       },
-      showAlert(msg){ this.$root.$data.store.show.call(this.$root.$data.store,msg) },
+      showAlert(msg){ this.$root.store.show.call(this.$root.store,msg) },
       submitArticle(){ // 提交文章
         let article=this.valueCheck();
         if (article){ // 排空处理
           this.$axios({
-            url:`${co}/articles/addArticle`,
+            url:`${this.$root.cors}/articles/addArticle`,
             method:'post',
             data:qs.stringify(article)
-          }).then((resp,err)=>{
-            if(err){
-              this.showAlert(err);
-              return;
-            }
+          }).then((resp)=>{
             let data=resp.data;
             if((typeof data)==='string'){
               if(data==='添加成功') this.resetCpt();
               this.showAlert(data);
-            }else this.showAlert('服务器错误');
+            }else this.showAlert('数据库访问出错，检查后台接口配置');
             article=null;
-          }).catch(err => this.showAlert(err));
+          }).catch(err => this.showAlert('可能是服务器正在定期重启，稍后再试'));
         }
       },
       getNavList(){ // 获取分类信息
-        this.$axios.get(`${co}/navs/navList`)
+        this.$axios.get(`${this.$root.cors}/navs/navList`)
             .then(resp=>{
               let data=resp.data;
               if(Array.isArray(data)) this.navList=data;
-              else this.showAlert('服务器错误')
-            }).catch(err => this.showAlert(err));
+              else this.showAlert('数据库访问出错，检查后台接口配置')
+            }).catch(err => this.showAlert('可能是服务器正在定期重启，稍后再试'));
       },
       valueCheck(){ // 提交文章前数据检查，确保数据合法
         let title=this.title.replace(/\s/g,'');
         let description=this.description.trim() || '暂无描述...';
         let tags=this.tags.replace(/\s/g,'');
-        let thumbnail='';
+        let cover=this.cover;
         let pid=this.pid;
         let type=this.type;
         let content=this.content;
@@ -142,6 +157,7 @@
         let allertMsg=[];
         if (!title) allertMsg.push('文章标题不能为空！')
         if (!tags) allertMsg.push('文章标签不能为空！')
+        if(cover==='def') allertMsg.push('封面不能为空')
         if (pid==='def') allertMsg.push('选择文章所属栏目！')
         if (type==='def') allertMsg.push('选择文章类型！')
         if (!content) allertMsg.push('文章内容不能为空！');
@@ -149,7 +165,7 @@
           this.showAlert(allertMsg);
           return null;
         }
-        return { title, description, tags, thumbnail, pid, type, content, author }
+        return { title, description, tags, cover:this.getCover, pid, type, content, author }
       }
     },
     created(){ this.getNavList(); }
@@ -199,6 +215,24 @@
     color:#666;
   }
   .at-item textarea:focus{ border-color: deepskyblue; }
+  .thumbnail{
+    position: relative;
+  }
+  .thumbnail select{
+    width:40%;
+    text-align: center;
+    text-align-last: center;
+    height:30px;
+    margin:5px 10px;
+    border:1px solid #e3e3e3;
+  }
+  .thumbnail img{
+    position: absolute;
+    right: 5%;
+    width:20%;
+    max-width: 200px;
+    z-index: 1000;
+  }
   .others li{
     display: inline-block;
     vertical-align: top;
